@@ -1,7 +1,6 @@
 const User = require('../models/user')
 const bcrypt = require('bcrypt');
 const { restart } = require('nodemon');
-const user = require('../models/user');
 const jwt = require('jsonwebtoken')
 const fs = require('fs')
 
