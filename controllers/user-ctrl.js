@@ -9,35 +9,33 @@ exports.signup = (req,res) => {
     bcrypt.hash(req.body.password, 10)
     .then(
         hash =>{
-            if(req.file){
-                const user = new User({
-                    email: req.body.email,
-                    password: hash,
-                    name: req.body.name,
-                    age: parseInt(req.body.age),
-                    firstname: req.body.firstname,
-                    lastname: req.body.lastname,
-                    username: req.body.username,
-                    imageUrl: `http://localhost:3000/images/${req.file.filename}`
-                });
-                user.save()
+            const data = req.file ? 
+            {
+                email: req.body.email,
+                password: hash,
+                name: req.body.name,
+                age: parseInt(req.body.age),
+                firstname: req.body.firstname,
+                lastname: req.body.lastname,
+                username: req.body.username,
+                imageUrl: `http://localhost:3000/images/${req.file.filename}`
+            }
+            :
+            {
+                email: req.body.email,
+                password: hash,
+                name: req.body.name,
+                age: parseInt(req.body.age),
+                firstname: req.body.firstname,
+                lastname: req.body.lastname,
+                username: req.body.username
+            }
+            const user = new User(data);
+            
+            user.save()
             .then(() => res.status(201).json({message: "Utilisateur crée !"}))
             .catch(error => res.status(500).json({error}));
-            }
-            else{
-                const user = new User({
-                    email: req.body.email,
-                    password: hash,
-                    name: req.body.name,
-                    age: parseInt(req.body.age),
-                    firstname: req.body.firstname,
-                    lastname: req.body.lastname,
-                    username: req.body.username,
-                });
-                user.save()
-                .then(() => res.status(201).json({message: "Utilisateur crée !"}))
-                .catch(error => res.status(500).json({error}));
-            }
+            
         })
     .catch(error => res.status(500).json({error}));
     
