@@ -64,9 +64,9 @@ exports.getAllUsers = (req,res) => {
     .catch(error => res.status(500).json({ error }))
 }
 
-exports.getUser = (req, res, next) => {
+exports.getUser = (req, res) => {
     if(req.params.userId === req.body.userId){
-        User.findOne({_id: req.params.userId}).populate('friends')
+        User.findOne({_id: req.params.userId}).populate({path:'friends',select: ['name']})
         .then(user => {
             res.status(200).json(user);
           }
@@ -95,9 +95,7 @@ exports.deleteUser = (req, res) => {
                         res.status(200).json({message:'Utilisateur supprimé'})
                     })  
                 }
-            }
-               
-                     
+            }        
             ).catch(
                 error => res.status(500).json({error:"erreur 1"})
             )  
@@ -108,4 +106,30 @@ exports.deleteUser = (req, res) => {
     }else{
         res.status(401).json({message: "Ce n'est pas votre profil"})
     } 
+}
+
+exports.addFriend=(req,res) => {
+    User.findOneAndUpdate({_id: req.body.userId}, {$push : {friends: req.body.friendId}})
+    .then(
+        ()=>
+        res.status(200).json({message :'ami(e) ajouté(e)'})
+    )
+    .catch(
+        (error) =>{
+            res.status(500).json({error : 'erreur serveur'})
+        }
+    )
+}
+
+exports.removeFriend = (req,res) =>{
+    User.findOneAndUpdate({_id: req.body.userId}, {$pull : {friends: req.body.friendId}})
+    .then(
+        ()=>
+        res.status(200).json({message :'ami(e) supprimé(e)'})
+    )
+    .catch(
+        (error) =>{
+            res.status(500).json({error : 'erreur serveur'})
+        }
+    )
 }

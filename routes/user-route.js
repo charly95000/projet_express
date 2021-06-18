@@ -10,5 +10,7 @@ router.post('/connexion',userCtrl.login)
 router.get('/all',auth,userCtrl.getAllUsers)
 router.get('/one/:userId',userCtrl.getUser)
 router.delete('/one/:userId',userCtrl.deleteUser)
+router.patch('/addFriend', userCtrl.addFriend)
+router.patch('/removeFriend', userCtrl.removeFriend)
 
 module.exports = router;
