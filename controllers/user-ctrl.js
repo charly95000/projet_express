@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 const fs = require('fs')
 
 exports.signup = (req,res) => {
+    console.log("ici")
     bcrypt.hash(req.body.password, 10)
     .then(
         hash =>{
@@ -41,6 +42,7 @@ exports.signup = (req,res) => {
 }
 
 exports.login = (req, res) =>{
+    console.log("ici")
     User.findOne({ email: req.body.email})
     .then(user =>{
         if(!user){
@@ -56,7 +58,7 @@ exports.login = (req, res) =>{
                 token : jwt.sign(
                     {userId : user._id},
                     'RANDOM_TOKEN_SECRET',
-                    {expiresIn: 60*5}
+                    {expiresIn: 60*60}
                 )
             })
         })
@@ -121,54 +123,99 @@ exports.deleteUser = (req, res) => {
 }
 
 exports.addFriend=(req,res) => {
-    if(req.body.userId !== req.body.friendId){
-        User.findOne({_id : req.body.userId, friends :{$in: req.body.friendId}})
-        .then(
-            user =>{
-                if(!user){
-                    User.findOneAndUpdate({_id: req.body.userId}, {$push : {friends: req.body.friendId}})
-                    .then(
-                        ()=>
-                        res.status(200).json({message :'ami(e) ajouté(e)'})
-                    )
-                    .catch(
-                        (error) =>{
-                            res.status(500).json({error : 'erreur serveur'})
-                        }
-                    )
-                }else{
-                    res.status(400).json({message : "Vous etes deja ami(e)"})
+    if(req.params.userId === req.body.userId){
+        if(req.body.userId !== req.body.friendId){
+            User.findOne({_id: req.body.friendId})
+            .then(
+                friend => {
+                    if(friend){
+                        User.findOne({_id : req.body.userId, friends :{$in: req.body.friendId}})
+                        .then(
+                            user =>{
+                                if(!user){
+                                    User.findOneAndUpdate({_id: req.body.userId}, {$push : {friends: req.body.friendId}})
+                                    .then(
+                                        ()=>
+                                        res.status(200).json({message :'ami(e) ajouté(e)'})
+                                    )
+                                    .catch(
+                                        (error) =>{
+                                            res.status(500).json({error : 'erreur serveur'})
+                                        }
+                                    )
+                                }else{
+                                    res.status(400).json({message : "Vous etes deja ami(e)"})
+                                }
+                            }
+                        ).catch(
+                            (err) =>{
+                                res.status(500).json({message : "erreur serveur"})
+                            }
+                        )
+                    }else{
+                        res.status(400).json({erreur: "Cette personne ne fait pas partie des utilisateurs"})
+                    }
                 }
-            }
-        ).catch(
-            (err) =>{
-                res.status(500).json({message : "erreur serveur"})
-            }
-        )
+            )
+            
+        }else{
+            res.status(400).json({erreur: "Vous ne pouvez pas etre votre propre ami(e)"})
+        }
     }else{
-        res.status(400).json({erreur: "Vous ne pouvez pas etre votre propre ami(e)"})
+        res.status(401).json({message: "Ce n'est pas votre profil"})
     }
+    
 }
 
 exports.removeFriend = (req,res) =>{
-    if(req.body.userId !== req.body.friendId){
-        User.findOne({_id : req.body.userId, friends :{$in: req.body.friendId}})
-        .then(
-            user =>{
-                if(user){
-                    User.findOneAndUpdate({_id: req.body.userId}, {$pull : {friends: req.body.friendId}})
-                    .then(
-                        ()=>
-                        res.status(200).json({message :'ami(e) supprimé(e)'})
-                    )
-                    .catch(
-                        (error) =>{
-                            res.status(500).json({error : 'erreur serveur'})
-                        }
-                    )
-                }else{
-                    res.status(400).json({message : "Vous n'etes pas ami(e)"})
+    if(req.params.userId === req.body.userId){
+        if(req.body.userId !== req.body.friendId){
+            User.findOne({_id : req.body.userId, friends :{$in: req.body.friendId}})
+            .then(
+                user =>{
+                    if(user){
+                        User.findOneAndUpdate({_id: req.body.userId}, {$pull : {friends: req.body.friendId}})
+                        .then(
+                            ()=>
+                            res.status(200).json({message :'ami(e) supprimé(e)'})
+                        )
+                        .catch(
+                            (error) =>{
+                                res.status(500).json({error : 'erreur serveur'})
+                            }
+                        )
+                    }else{
+                        res.status(400).json({message : "Vous n'etes pas ami(e)"})
+                    }
                 }
+            ).catch(
+                (err) =>{
+                    res.status(500).json({message : "erreur serveur"})
+                }
+            )
+        }else{
+            res.status(400).json({erreur: "Vous ne pouvez pas etre votre propre ami(e)"})
+        }
+    }else{
+        res.status(401).json({message: "Ce n'est pas votre profil"})
+    }
+    
+}
+
+exports.updateUser = (req, res) => {
+    if(req.params.userId === req.body.userId){
+        const update = {
+            email: req.body.email,
+            name: req.body.name,
+            age: parseInt(req.body.age),
+            firstname: req.body.firstname,
+            lastname: req.body.lastname,
+            username: req.body.username,
+        }
+        User.findOneAndUpdate({_id : req.body.userId},update)
+        .then (
+            () =>{
+            res.status(200).json({message: "informations mises à jour"})
             }
         ).catch(
             (err) =>{
@@ -176,27 +223,7 @@ exports.removeFriend = (req,res) =>{
             }
         )
     }else{
-        res.status(400).json({erreur: "Vous ne pouvez pas etre votre propre ami(e)"})
+        res.status(401).json({message: "Ce n'est pas votre profil"})
     }
-}
-
-exports.updateUser = (req, res) => {
-    const update = {
-        email: req.body.email,
-        name: req.body.name,
-        age: parseInt(req.body.age),
-        firstname: req.body.firstname,
-        lastname: req.body.lastname,
-        username: req.body.username,
-    }
-    User.findOneAndUpdate({_id : req.body.userId},update)
-    .then (
-        () =>{
-        res.status(200).json({message: "informations mises à jour"})
-        }
-    ).catch(
-        (err) =>{
-            res.status(500).json({message : "erreur serveur"})
-        }
-    )
+    
 }
