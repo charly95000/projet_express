@@ -12,5 +12,6 @@ router.get('/one/:userId',userCtrl.getUser)
 router.delete('/one/:userId',userCtrl.deleteUser)
 router.patch('/addFriend', userCtrl.addFriend)
 router.patch('/removeFriend', userCtrl.removeFriend)
+router.patch('/updateCompte', userCtrl.updateUser)
 
 module.exports = router;

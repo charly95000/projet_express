@@ -167,3 +167,24 @@ exports.removeFriend = (req,res) =>{
         res.status(400).json({erreur: "Vous ne pouvez pas etre votre propre ami(e)"})
     }
 }
+
+exports.updateUser = (req, res) => {
+    const update = {
+        email: req.body.email,
+        name: req.body.name,
+        age: parseInt(req.body.age),
+        firstname: req.body.firstname,
+        lastname: req.body.lastname,
+        username: req.body.username,
+    }
+    User.findOneAndUpdate({_id : req.body.userId},update)
+    .then (
+        () =>{
+        res.status(200).json({message: "informations mises à jour"})
+        }
+    ).catch(
+        (err) =>{
+            res.status(500).json({message : "erreur serveur"})
+        }
+    )
+}
